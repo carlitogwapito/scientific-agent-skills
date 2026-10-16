@@ -267,6 +267,30 @@ class JatsTests(unittest.TestCase):
         )
         self.assertEqual(sections[3]["sec_type"], "methods")
 
+    def test_paragraphs_after_last_section_are_kept(self) -> None:
+        """Synthetic boundary case: trailing text needs the final loose-block flush."""
+        body = jats_to_text.parse(
+            '<body><sec sec-type="results"><title>Results</title>'
+            '<p>Growth increased.</p></sec>'
+            '<p>Closing <italic>sentence</italic><xref ref-type="bibr">12</xref>'
+            ' after the citation.</p><p>Final paragraph.</p></body>'
+        )
+        self.assertEqual(
+            jats_to_text.collect_sections(body),
+            [
+                {
+                    "title": "Results",
+                    "sec_type": "results",
+                    "text": "Results Growth increased.",
+                },
+                {
+                    "title": "",
+                    "sec_type": None,
+                    "text": "Closing sentence after the citation. Final paragraph.",
+                },
+            ],
+        )
+
 
 class ArxivTests(unittest.TestCase):
     def test_entry_is_parsed_with_version_split(self) -> None:
